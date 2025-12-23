@@ -1,0 +1,17 @@
+:name: CH32V003_Zig_Test
+:description: Running Zig on CH32V003
+
+logLevel 3
+
+mach create
+machine LoadPlatformDescription @ch32v003.repl
+
+sysbus LoadELF @zig-out/bin/jmOS
+
+showAnalyzer usart1
+
+sysbus LogPeripheralAccess usart1
+
+cpu PC 0x08000000
+
+start

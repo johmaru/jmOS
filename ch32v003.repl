@@ -1,0 +1,12 @@
+cpu: CPU.RiscV32 @ sysbus
+    cpuType: "rv32ec_zicsr"
+    hartId: 0
+
+flash: Memory.MappedMemory @ sysbus 0x08000000
+    size: 0x4000
+
+sram: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x1000
+
+usart1: UART.STM32_UART @ sysbus <0x40013800, +0x400>
+    frequency: 24000000
