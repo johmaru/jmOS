@@ -1,4 +1,5 @@
 const std = @import("std");
+const ui = @import("ui.zig");
 
 pub const Tui = struct {
     var putchar_fn: PutCharFn = undefined;
@@ -71,6 +72,17 @@ pub const Tui = struct {
         print("H");
     }
 
+    pub fn clearRect(rect: ui.Rect) void {
+        var y: u32 = 0;
+        while (y < rect.height) : (y += 1) {
+            locate(rect.x, rect.y + y);
+            var x: u32 = 0;
+            while (x < rect.width) : (x += 1) {
+                put(' ');
+            }
+        }
+    }
+
     pub fn locate(x: u32, y: u32) void {
         esc();
         printInt(y);
@@ -125,5 +137,34 @@ pub const Tui = struct {
             put('-');
         }
         put('+');
+    }
+
+    pub fn drawBoxRect(rect: ui.Rect, title: ?[]const u8) void {
+        drawBox(rect.x, rect.y, rect.width, rect.height, title);
+    }
+};
+
+pub const RingBuffer = struct {
+    buffer: [16]u8 = undefined,
+    head: usize = 0,
+    tail: usize = 0,
+
+    pub fn push(self: *RingBuffer, data: u8) void {
+        const next_head = (self.head + 1) % self.buffer.len;
+        if (next_head != self.tail) {
+            self.buffer[self.head] = data;
+            self.head = next_head;
+        }
+    }
+
+    pub fn pop(self: *RingBuffer) ?u8 {
+        if (self.head == self.tail) return null;
+        const data = self.buffer[self.tail];
+        self.tail = (self.tail + 1) % self.buffer.len;
+        return data;
+    }
+
+    pub fn isEmpty(self: *RingBuffer) bool {
+        return self.head == self.tail;
     }
 };

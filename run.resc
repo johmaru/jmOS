@@ -6,6 +6,10 @@ logLevel 3
 mach create
 machine LoadPlatformDescription @ch32v003.repl
 
+emulation CreateServerSocketTerminal 1234 "externalUART"
+
+connector Connect usart1 externalUART
+
 sysbus LoadELF @zig-out/bin/jmOS
 
 showAnalyzer usart1
