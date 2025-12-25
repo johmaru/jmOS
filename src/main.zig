@@ -4,6 +4,7 @@ const ch32v003 = @import("ch32v003");
 const trap = @import("trap.zig");
 const console = @import("lib/console.zig");
 const ui = @import("lib/ui.zig");
+const command = @import("lib/command.zig");
 
 export fn uart_putc(ch: u8) callconv(.c) void {
     while ((ch32v003.uart_sr.* & (1 << 7)) == 0) {}
@@ -89,19 +90,9 @@ export fn main() void {
             if (key == '\n' or key == '\r') {
                 logger.println("");
 
-                const cmd = cmd_buffer[0..cmd_buffer_len];
-                if (std.mem.eql(u8, cmd, "help")) {
-                    logger.println("Available commands:");
-                    logger.println("  help - Show this help message");
-                    logger.println("  info - Show system information");
-                } else if (std.mem.eql(u8, cmd, "info")) {
-                    logger.println("jmOS on CH32V003");
-                    logger.println("RISC-V CPU");
-                    logger.println("2KB RAM, 16KB Flash");
-                } else if (cmd_buffer_len > 0) {
-                    logger.println("Unknown command: ");
-                    logger.append(cmd);
-                }
+                const cmd_str = cmd_buffer[0..cmd_buffer_len];
+
+                command.Execute.runCommand(cmd_str, &logger);
 
                 cmd_buffer_len = 0;
 
