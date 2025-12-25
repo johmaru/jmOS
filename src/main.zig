@@ -68,27 +68,52 @@ export fn main() void {
 
     var input_buffer = console.RingBuffer{};
 
-    while (true) {
-        console.Tui.setColor(.Yellow, .Blue);
+    var cmd_buffer: [32]u8 = undefined;
+    var cmd_buffer_len: usize = 0;
 
-        if ((ch32v003.uart_sr.* & 1 << 5) != 0) {
+    while (true) {
+        while ((ch32v003.uart_sr.* & 1 << 5) != 0) {
             const data = @as(u8, @truncate(ch32v003.uart_dr.*));
             input_buffer.push(data);
         }
 
-        if (input_buffer.pop()) |key| {
-            if (key == 'a') {
-                logger.println("Command: Task A started.");
-            } else if (key == 'b') {
-                logger.println("Command: Task B started.");
-            } else {
-                logger.println("Unknown command received.");
+        while (input_buffer.pop()) |key| {
+            while ((ch32v003.uart_sr.* & 1 << 5) != 0) {
+                const data = @as(u8, @truncate(ch32v003.uart_dr.*));
+                input_buffer.push(data);
             }
-        }
 
-        var delay: u32 = 0;
-        while (delay < 5000000) : (delay += 1) {
-            std.mem.doNotOptimizeAway(delay);
+            console.Tui.setColor(.Yellow, .Blue);
+            logger.append(&[_]u8{key});
+
+            if (key == '\n' or key == '\r') {
+                logger.println("");
+
+                const cmd = cmd_buffer[0..cmd_buffer_len];
+                if (std.mem.eql(u8, cmd, "help")) {
+                    logger.println("Available commands:");
+                    logger.println("  help - Show this help message");
+                    logger.println("  info - Show system information");
+                } else if (std.mem.eql(u8, cmd, "info")) {
+                    logger.println("jmOS on CH32V003");
+                    logger.println("RISC-V CPU");
+                    logger.println("2KB RAM, 16KB Flash");
+                } else if (cmd_buffer_len > 0) {
+                    logger.println("Unknown command: ");
+                    logger.append(cmd);
+                }
+
+                cmd_buffer_len = 0;
+
+                console.Tui.setColor(.White, .Blue);
+                console.Tui.locate(logRect.x, logRect.y + logger.current_line);
+                console.Tui.print("> ");
+            } else {
+                if (cmd_buffer_len < cmd_buffer.len) {
+                    cmd_buffer[cmd_buffer_len] = key;
+                    cmd_buffer_len += 1;
+                }
+            }
         }
     }
 }

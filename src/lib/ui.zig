@@ -53,24 +53,21 @@ pub const StackPanel = struct {
 pub const LogWindow = struct {
     rect: Rect,
     current_line: u8,
+    current_col: u8,
 
     pub fn init(rect: Rect) LogWindow {
         return LogWindow{
             .rect = rect,
             .current_line = 0,
+            .current_col = 0,
         };
     }
 
     pub fn println(self: *LogWindow, text: []const u8) void {
-        console.Tui.locate(self.rect.x, self.rect.y + self.current_line);
-        var idx: u32 = 0;
-        while (idx < self.rect.width) : (idx += 1) {
-            console.Tui.print(" ");
+        if (text.len > 0) {
+            console.Tui.locate(self.rect.x + self.current_col, self.rect.y + self.current_line);
+            console.Tui.print(text);
         }
-
-        console.Tui.locate(self.rect.x, self.rect.y + self.current_line);
-        console.Tui.print(text);
-
         self.current_line += 1;
         if (self.current_line >= self.rect.height) {
             self.current_line = 0;
@@ -84,5 +81,27 @@ pub const LogWindow = struct {
 
         console.Tui.locate(self.rect.x, self.rect.y + self.current_line);
         console.Tui.print("> ");
+        self.current_col = 2;
+    }
+
+    pub fn append(self: *LogWindow, text: []const u8) void {
+        for (text) |char| {
+            if (self.current_col >= self.rect.width) {
+                self.current_line += 1;
+                if (self.current_line >= self.rect.height) {
+                    self.current_line = 0;
+                }
+
+                console.Tui.locate(self.rect.x, self.rect.y + self.current_line);
+                var idx: u32 = 0;
+                while (idx < self.rect.width) : (idx += 1) {
+                    console.Tui.print(" ");
+                }
+                self.current_col = 0;
+            }
+            console.Tui.locate(self.rect.x + self.current_col, self.rect.y + self.current_line);
+            console.Tui.print(&[_]u8{char});
+            self.current_col += 1;
+        }
     }
 };
