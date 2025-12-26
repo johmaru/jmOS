@@ -1,28 +1,29 @@
 ENTRY(_start)
 
-MEMORY {
-    FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 16K
-    RAM (rwx)  : ORIGIN = 0x20000000, LENGTH = 2K
-}
-
 SECTIONS {
+    . = 0x800000; /* Set the load address for Raspberry Pi 4 */
+
     .text : {
         KEEP(*(.text.entry))
         *(.text*)
-    } > FLASH
+    }
 
-    .rodata :
-    {
+    .rodata : {
         *(.rodata*)
-    } > FLASH
+    }
 
-    .data :
-    {
+    .data : {
         *(.data*)
-    } > RAM AT > FLASH
+    }
 
-    .bss :
-    {
+    .bss : {
+        . = ALIGN(16);
+        __bss_start = .;
         *(.bss*)
-    } > RAM
+        *(COMMON)
+        __bss_end = .;
+    }
+
+    . = ALIGN(4096);
+    heap_start = .;
 }

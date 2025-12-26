@@ -12,12 +12,12 @@ pub fn build(b: *std.Build) void {
     // means any target is allowed, and the default is native. Other options
     // for restricting supported target set are available.
     const target = b.resolveTargetQuery(.{
-        .cpu_arch = .riscv32,
+        .cpu_arch = .aarch64,
         .os_tag = .freestanding,
         .abi = .none,
-        .cpu_model = .{ .explicit = &std.Target.riscv.cpu.generic_rv32 },
+        .cpu_model = .{ .explicit = &std.Target.aarch64.cpu.generic },
 
-        .cpu_features_add = std.Target.riscv.featureSet(&.{ .e, .c }),
+        .cpu_features_add = std.Target.aarch64.featureSet(&.{}),
     });
     // Standard optimization options allow the person running `zig build` to select
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall. Here we do not

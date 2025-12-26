@@ -1,21 +1,15 @@
-:name: CH32V003_Zig_Test
-:description: Running Zig on CH32V003
+:name: rpi4_Zig_Test
+:description: Running Zig on Raspberry Pi 4
 
 logLevel 3
 
 mach create
-machine LoadPlatformDescription @ch32v003.repl
-
-emulation CreateServerSocketTerminal 1234 "externalUART"
-
-connector Connect usart1 externalUART
+machine LoadPlatformDescription  @rpi4.repl
 
 sysbus LoadELF @zig-out/bin/jmOS
 
-showAnalyzer usart1
+showAnalyzer sysbus.uart0
 
-sysbus LogPeripheralAccess usart1
-
-cpu PC 0x08000000
+cpu0 PC 0x80000
 
 start
